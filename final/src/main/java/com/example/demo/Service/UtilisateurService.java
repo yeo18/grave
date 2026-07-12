@@ -44,4 +44,5 @@ public class UtilisateurService {
         return utilisateurRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
     }
+
 }

@@ -1,9 +1,13 @@
 package com.example.demo.Controller;
 
+import com.example.demo.Entity.Utilisateur;
 import com.example.demo.Service.AdminAcessService;
+import com.example.demo.Service.UtilisateurService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -13,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 public class AdminController {
     private  final AdminAcessService adminAcessService;
+    private final UtilisateurService utilisateurService;
     @PostMapping("/profil/{profilId}/permission/{permissionId}")
     public ResponseEntity<String> attribuerProfil(@PathVariable Long profilId, @PathVariable Long permissionId){
         adminAcessService.attribuerDroitProfil(profilId,permissionId);
@@ -43,6 +48,19 @@ public class AdminController {
     public ResponseEntity <String>deletePermission(@PathVariable Long utilisateurId, @PathVariable Long permissionsId){
         adminAcessService.retirerPermissionSupplementaire(utilisateurId,permissionsId);
         return ResponseEntity.ok("Permission retiré  avec succes.");
+    }
+    @GetMapping("/me")
+    public ResponseEntity<Utilisateur> getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new RuntimeException("Non authentifié");
+        }
+        // Récupérer l'utilisateur à partir de l'email
+        String email = authentication.getName();
+
+        Utilisateur utilisateur = utilisateurService.trouverParEmail(email);
+        // Attention : il faut gérer les permissions, profil, etc.
+        return ResponseEntity.ok(utilisateur);
     }
 
 }
