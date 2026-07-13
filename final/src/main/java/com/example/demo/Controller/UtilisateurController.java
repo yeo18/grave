@@ -17,17 +17,49 @@ public class UtilisateurController {
 
     private final UtilisateurService utilisateurService;
 
-    // Lister tous les utilisateurs
+    // 1. Lister tous les utilisateurs
     @GetMapping
     @PreAuthorize("@securityEvaluator.hasPermission('UTILISATEUR_VOIR')")
     public ResponseEntity<List<Utilisateur>> listerUtilisateurs() {
         return ResponseEntity.ok(utilisateurService.listerTous());
     }
 
-    // Voir un utilisateur par son ID
+    // 2. Voir un utilisateur par son ID
     @GetMapping("/{id}")
     @PreAuthorize("@securityEvaluator.hasPermission('UTILISATEUR_VOIR')")
     public ResponseEntity<Utilisateur> getUtilisateur(@PathVariable Long id) {
         return ResponseEntity.ok(utilisateurService.trouverParId(id));
+    }
+
+    // 3. Modifier un utilisateur (champs partiels)
+    @PutMapping("/{utilisateurId}")
+    @PreAuthorize("@securityEvaluator.hasPermission('GERER_HABILITATIONS')")
+    public ResponseEntity<Utilisateur> modifierUtilisateur(
+            @PathVariable Long utilisateurId,
+            @RequestParam(required = false) String nom,
+            @RequestParam(required = false) String prenom,
+            @RequestParam(required = false) String email,
+            @RequestParam(required = false) String telephone,
+            @RequestParam(required = false) Long profilId) {
+        Utilisateur user = utilisateurService.modifierUtilisateur(utilisateurId, nom, prenom, email, telephone, profilId);
+        return ResponseEntity.ok(user);
+    }
+
+    // 4. Supprimer un utilisateur
+    @DeleteMapping("/{utilisateurId}")
+    @PreAuthorize("@securityEvaluator.hasPermission('GERER_HABILITATIONS')")
+    public ResponseEntity<Void> supprimerUtilisateur(@PathVariable Long utilisateurId) {
+        utilisateurService.supprimerUtilisateur(utilisateurId);
+        return ResponseEntity.noContent().build();
+    }
+
+    // 5. Réinitialiser le mot de passe d'un utilisateur
+    @PutMapping("/{utilisateurId}/reset-password")
+    @PreAuthorize("@securityEvaluator.hasPermission('GERER_HABILITATIONS')")
+    public ResponseEntity<Void> resetPassword(
+            @PathVariable Long utilisateurId,
+            @RequestParam String newPassword) {
+        utilisateurService.resetPassword(utilisateurId, newPassword);
+        return ResponseEntity.ok().build();
     }
 }
