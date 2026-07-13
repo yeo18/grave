@@ -49,18 +49,6 @@ public class AdminController {
         adminAcessService.retirerPermissionSupplementaire(utilisateurId,permissionsId);
         return ResponseEntity.ok("Permission retiré  avec succes.");
     }
-    @GetMapping("/me")
-    public ResponseEntity<Utilisateur> getCurrentUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
-            throw new RuntimeException("Non authentifié");
-        }
-        // Récupérer l'utilisateur à partir de l'email
-        String email = authentication.getName();
 
-        Utilisateur utilisateur = utilisateurService.trouverParEmail(email);
-        // Attention : il faut gérer les permissions, profil, etc.
-        return ResponseEntity.ok(utilisateur);
-    }
 
 }
