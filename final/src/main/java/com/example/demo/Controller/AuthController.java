@@ -1,5 +1,5 @@
 package com.example.demo.Controller;
-
+import com.example.demo.Dto.ReponseAuthentification;
 import com.example.demo.Dto.Connexion;
 import com.example.demo.Dto.Inscription;
 import com.example.demo.Security.JwtUtil;
@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import com.example.demo.Dto.Connexion.ReponseAuthentification;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -38,7 +37,7 @@ public class AuthController {
         try{
             authService.authentifier(connexion.getEmail(),connexion.getPassword());
             String token = jwtUtil.generateToken(connexion.getEmail());
-            ReponseAuthentification reponse=  connexion.new ReponseAuthentification();
+            ReponseAuthentification reponse=  new ReponseAuthentification();
             reponse.setToken(token);
             System.out.println("Tentative de login pour : " + connexion.getEmail());
             return ResponseEntity.ok(reponse);

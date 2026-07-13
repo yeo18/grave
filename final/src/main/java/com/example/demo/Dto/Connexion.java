@@ -12,9 +12,7 @@ public class Connexion {
     private String email;
     @NotBlank
     private String password;
-    @Data  public class ReponseAuthentification{
-        private String token;
-    }
+
     @Data  public class AssignationDePermission{
         @NotNull private String IdCible;
         @NotNull private String IdPermission;
