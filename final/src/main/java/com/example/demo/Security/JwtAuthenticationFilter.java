@@ -30,39 +30,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
 
-        // ---- AJOUT : ignorer les endpoints d'authentification ----
+        // === AJOUT : Ignorer les requêtes OPTIONS (préflight) ===
+        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+            chain.doFilter(request, response);
+            return;
+        }
+        // ========================================================
+
         String path = request.getRequestURI();
         if (path.startsWith("/api/auth/login") || path.startsWith("/api/auth/register")) {
             chain.doFilter(request, response);
             return;
         }
-        // ----------------------------------------------------------
 
-        String authHeader = request.getHeader("Authorization");
-        System.out.println("AuthHeader brut : [" + authHeader + "]");
-        String token = null;
-        String email = null;
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            token = authHeader.substring(7);
-            System.out.println("Token extrait : [" + token + "]");
-            if (token != null && !token.isEmpty()) {
-                try {
-                    email = jwtUtil.extractEmail(token);
-                } catch (MalformedJwtException | ExpiredJwtException e) {
-                    System.out.println("❌ Token invalide : " + e.getMessage());
-                }
-            }
-        }
-        if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-            if (jwtUtil.isTokenValid(token)) {
-                UsernamePasswordAuthenticationToken authToken =
-                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authToken);
-                System.out.println("AUTHENTIFIE : " + userDetails.getUsername());
-            }
-        }
-        chain.doFilter(request, response);
+        // ... reste du code
     }
 }
