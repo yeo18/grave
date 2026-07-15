@@ -24,5 +24,8 @@ public class Permission {
     @Column(unique = true,nullable = false)
     private String nom;
 
+    @Column(length = 255)
+    private String description;
+
     private LocalDateTime creationDate;
 }

@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class DataInitializer implements CommandLineRunner {
@@ -37,19 +38,44 @@ public class DataInitializer implements CommandLineRunner {
         // ==========================================
         // 1. CRÉATION / RESTAURATION DE TOUTES LES PERMISSIONS
         // ==========================================
-        List<String> nomsPermissions = Arrays.asList(
-                "CHANTIER_CREER", "CHANTIER_MODIFIER", "CHANTIER_SUPPRIMER", "CHANTIER_VOIR", "CHANTIER_VOIR_STATS",
-                "TACHE_CREER", "TACHE_MODIFIER", "TACHE_SUPPRIMER", "TACHE_VOIR", "TACHE_VALIDER",
-                "TACHE_ASSIGNER_EQUIPE", "TACHE_ASSIGNER_UTILISATEUR",
-                "EQUIPE_CREER", "EQUIPE_MODIFIER", "EQUIPE_SUPPRIMER", "EQUIPE_VOIR", "EQUIPE_GERER_MEMBRES",
-                "UTILISATEUR_VOIR", "UTILISATEUR_CREER", "UTILISATEUR_MODIFIER", "UTILISATEUR_SUPPRIMER",
-                "GERER_HABILITATIONS"
+        Map<String, String> permissionsAvecDescription = Map.ofEntries(
+                Map.entry("CHANTIER_CREER", "Créer un nouveau chantier"),
+                Map.entry("CHANTIER_MODIFIER", "Modifier les informations d'un chantier"),
+                Map.entry("CHANTIER_SUPPRIMER", "Supprimer définitivement un chantier"),
+                Map.entry("CHANTIER_VOIR", "Consulter la liste et le détail des chantiers"),
+                Map.entry("CHANTIER_VOIR_STATS", "Accéder aux statistiques et indicateurs d'un chantier"),
+                Map.entry("TACHE_CREER", "Créer une nouvelle tâche"),
+                Map.entry("TACHE_MODIFIER", "Modifier une tâche (titre, dates, description, statut)"),
+                Map.entry("TACHE_SUPPRIMER", "Supprimer définitivement une tâche"),
+                Map.entry("TACHE_VOIR", "Consulter la liste et le détail des tâches"),
+                Map.entry("TACHE_VALIDER", "Marquer une tâche comme terminée"),
+                Map.entry("TACHE_ASSIGNER_EQUIPE", "Assigner une tâche à une équipe"),
+                Map.entry("TACHE_ASSIGNER_UTILISATEUR", "Assigner une tâche à un utilisateur"),
+                Map.entry("EQUIPE_CREER", "Créer une nouvelle équipe"),
+                Map.entry("EQUIPE_MODIFIER", "Modifier les informations d'une équipe"),
+                Map.entry("EQUIPE_SUPPRIMER", "Supprimer définitivement une équipe"),
+                Map.entry("EQUIPE_VOIR", "Consulter la liste et le détail des équipes"),
+                Map.entry("EQUIPE_GERER_MEMBRES", "Ajouter ou retirer des membres dans une équipe"),
+                Map.entry("UTILISATEUR_VOIR", "Consulter la liste des utilisateurs"),
+                Map.entry("UTILISATEUR_CREER", "Créer un nouvel utilisateur"),
+                Map.entry("UTILISATEUR_MODIFIER", "Modifier les informations d'un utilisateur"),
+                Map.entry("UTILISATEUR_SUPPRIMER", "Supprimer définitivement un utilisateur"),
+                Map.entry("GERER_HABILITATIONS", "Gérer les profils, les permissions et les accès")
         );
 
-        for (String nom : nomsPermissions) {
-            if (permissionRepository.findByNom(nom).isEmpty()) {
-                permissionRepository.save(newPermission(nom));
-                System.out.println("✅ Permission restaurée : " + nom);
+        for (Map.Entry<String, String> entry : permissionsAvecDescription.entrySet()) {
+            String nom = entry.getKey();
+            String description = entry.getValue();
+            Permission perm = permissionRepository.findByNom(nom).orElse(null);
+            if (perm == null) {
+                perm = newPermission(nom);
+                perm.setDescription(description);
+                permissionRepository.save(perm);
+                System.out.println("✅ Permission créée : " + nom);
+            } else if (perm.getDescription() == null || !description.equals(perm.getDescription())) {
+                perm.setDescription(description);
+                permissionRepository.save(perm);
+                System.out.println("📝 Description mise à jour : " + nom);
             }
         }
 
