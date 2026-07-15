@@ -32,7 +32,7 @@ public class SecurityEvaluator {
                         .anyMatch(p -> p.getNom().equalsIgnoreCase(permissionRequise));
 
         // Vérifier dans les permissions spécifiques
-        boolean possedeViaSurcharge = utilisateur.getPermissionsSpecifique().stream()
+        boolean possedeViaSurcharge = utilisateur.getPermissionsSpecifiques().stream()
                 .anyMatch(p -> p.getNom().equalsIgnoreCase(permissionRequise));
 
         return possedeViaRole || possedeViaSurcharge;

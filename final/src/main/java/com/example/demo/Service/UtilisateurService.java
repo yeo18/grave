@@ -90,7 +90,7 @@ public class UtilisateurService {
             dto.setProfil(profilDto);
         }
 
-        Set<PermissionMeDto> specDto = utilisateur.getPermissionsSpecifique()
+        Set<PermissionMeDto> specDto = utilisateur.getPermissionsSpecifiques()
                 .stream()
                 .map(p -> {
                     PermissionMeDto pm = new PermissionMeDto();

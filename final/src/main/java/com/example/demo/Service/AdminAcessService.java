@@ -51,7 +51,7 @@ public class AdminAcessService {
                 .orElseThrow(() -> new RuntimeException("Utilisateur introuvable avec l'ID : " + utilisateurId));
         Permission permission = permissionRepository.findById(permissionId)
                 .orElseThrow(() -> new RuntimeException("Permission introuvable avec l'ID : " + permissionId));
-        utilisateur.getPermissionsSpecifique().add(permission);
+        utilisateur.getPermissionsSpecifiques().add(permission);
         utilisateurRepository.save(utilisateur);
     }
 
@@ -59,7 +59,7 @@ public class AdminAcessService {
     public void retirerPermissionSupplementaire(Long utilisateurId, Long permissionId) {
         Utilisateur utilisateur = utilisateurRepository.findById(utilisateurId)
                 .orElseThrow(() -> new RuntimeException("Utilisateur introuvable avec l'ID : " + utilisateurId));
-        boolean removed = utilisateur.getPermissionsSpecifique().removeIf(p -> p.getId().equals(permissionId));
+        boolean removed = utilisateur.getPermissionsSpecifiques().removeIf(p -> p.getId().equals(permissionId));
         if (!removed) {
             throw new RuntimeException("Cette permission spécifique n'est pas attribuée à cet utilisateur");
         }
