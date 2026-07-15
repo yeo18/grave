@@ -1,6 +1,7 @@
 package com.example.demo.Entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
@@ -53,9 +54,9 @@ public class Utilisateur {
     @JsonIgnore
     @OneToMany
     private List <Chantier> chantierCreer=new ArrayList<>();
-    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "equipe_id")
+    @JsonIgnoreProperties({"membres", "taches", "chantier", "creation", "modification"})
     private Equipe equipe;
     @PrePersist
     protected void onCreate() {
