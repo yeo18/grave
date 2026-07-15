@@ -64,7 +64,7 @@ public class EquipeService {
 
     // 4. LISTER TOUTES
     @PreAuthorize("@securityEvaluator.hasPermission('EQUIPE_VOIR')")
-    public List<Equipe> ListeEquipes() {
+    public List<Equipe> listerToutes() {
         return equipeRepository.findAll();
     }
 

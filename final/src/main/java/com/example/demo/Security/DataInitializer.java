@@ -44,22 +44,28 @@ public class DataInitializer implements CommandLineRunner {
                     newPermission("CHANTIER_MODIFIER"),
                     newPermission("CHANTIER_SUPPRIMER"),
                     newPermission("CHANTIER_VOIR"),
-                    newPermission("CHANTIER_VOIR_STATS"),      // ✅ AJOUTÉE
+                    newPermission("CHANTIER_VOIR_STATS"),
 
                     // Tache
                     newPermission("TACHE_CREER"),
                     newPermission("TACHE_MODIFIER"),
                     newPermission("TACHE_SUPPRIMER"),
                     newPermission("TACHE_VOIR"),
-                    newPermission("TACHE_ASSIGNER_EQUIPE"),    // ✅ AJOUTÉE
-                    newPermission("TACHE_ASSIGNER_UTILISATEUR"), // ✅ AJOUTÉE
+                    newPermission("TACHE_ASSIGNER_EQUIPE"),
+                    newPermission("TACHE_ASSIGNER_UTILISATEUR"),
 
                     // Equipe
-                    newPermission("EQUIPE_CREER"),             // ✅ AJOUTÉE
-                    newPermission("EQUIPE_MODIFIER"),          // ✅ AJOUTÉE
-                    newPermission("EQUIPE_SUPPRIMER"),         // ✅ AJOUTÉE
-                    newPermission("EQUIPE_VOIR"),              // ✅ AJOUTÉE
-                    newPermission("EQUIPE_GERER_MEMBRES"),     // ✅ AJOUTÉE
+                    newPermission("EQUIPE_CREER"),
+                    newPermission("EQUIPE_MODIFIER"),
+                    newPermission("EQUIPE_SUPPRIMER"),
+                    newPermission("EQUIPE_VOIR"),
+                    newPermission("EQUIPE_GERER_MEMBRES"),
+
+                    // Utilisateur
+                    newPermission("UTILISATEUR_VOIR"),
+                    newPermission("UTILISATEUR_CREER"),
+                    newPermission("UTILISATEUR_MODIFIER"),
+                    newPermission("UTILISATEUR_SUPPRIMER"),
 
                     // Admin
                     newPermission("GERER_HABILITATIONS")
@@ -106,17 +112,15 @@ public class DataInitializer implements CommandLineRunner {
             admin.setPrenom("Super");
             admin.setEmail("admin@example.com");
             admin.setPassword(passwordEncoder.encode("admin123"));
-
             admin.setTelephone("0102030405");
             admin.setProfil(adminProfil);
             admin.setDatecreation(LocalDateTime.now());
             admin.setDateModification(LocalDateTime.now());
             utilisateurRepository.save(admin);
-            System.out.println(" Admin créé : admin@example.com / admin123");
+            System.out.println("✅ Admin créé : admin@example.com / admin123");
         }
     }
 
-    // Méthode utilitaire pour créer une permission
     private Permission newPermission(String nom) {
         Permission p = new Permission();
         p.setNom(nom);

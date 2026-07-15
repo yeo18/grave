@@ -5,7 +5,6 @@ import com.example.demo.Dto.PermissionMeDto;
 import com.example.demo.Dto.ProfilMeDto;
 import com.example.demo.Dto.UserMeDto;
 
-
 import com.example.demo.Entity.Profil;
 import com.example.demo.Entity.Utilisateur;
 import com.example.demo.Repository.ProfilRepository;
@@ -26,9 +25,10 @@ public class UtilisateurService {
     private final ProfilRepository profilRepository;
     private final UtilisateurRepository utilisateurRepository;
     private final PasswordEncoder passwordEncoder;
+
     public Utilisateur inscrire(Inscription inscription) {
         if (utilisateurRepository.findByEmail(inscription.getEmail()).isPresent()) {
-            throw new RuntimeException("Vous etes deja inscrit");
+            throw new RuntimeException("Vous êtes déjà inscrit");
         }
         Profil profilUser = profilRepository.findByNom("USER")
                 .orElseThrow(() -> new RuntimeException("Profil USER manquant"));
@@ -38,14 +38,13 @@ public class UtilisateurService {
         utilisateur.setPrenom(inscription.getPrenom());
         utilisateur.setEmail(inscription.getEmail());
         utilisateur.setPassword(passwordEncoder.encode(inscription.getPassword()));
-        if (inscription.getTelephone() != null) {
-            utilisateur.setTelephone(inscription.getTelephone());
-        }
+        utilisateur.setTelephone(inscription.getTelephone() != null ? inscription.getTelephone() : "");
         utilisateur.setProfil(profilUser);
         return utilisateurRepository.save(utilisateur);
     }
+
     public Utilisateur trouverParEmail(String email) {
-        return utilisateurRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("Utilisateur non trouver"));
+        return utilisateurRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
     }
 
     public List<Utilisateur> listerTous() {
@@ -56,13 +55,16 @@ public class UtilisateurService {
         return utilisateurRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
     }
-    // Dans UtilisateurService.java
+
     public UserMeDto getCurrentUserDto(String email) {
         Utilisateur utilisateur = trouverParEmail(email);
         return convertToDto(utilisateur);
     }
 
-    private UserMeDto convertToDto(Utilisateur utilisateur) {
+    /**
+     * Convertit un Utilisateur en UserMeDto pour l'API
+     */
+    public UserMeDto convertToDto(Utilisateur utilisateur) {
         UserMeDto dto = new UserMeDto();
         dto.setId(utilisateur.getId());
         dto.setNom(utilisateur.getNom());
@@ -101,6 +103,7 @@ public class UtilisateurService {
 
         return dto;
     }
+
     @Transactional
     public Utilisateur modifierUtilisateur(Long id, String nom, String prenom, String email, String telephone, Long profilId) {
         Utilisateur user = trouverParId(id);

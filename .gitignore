@@ -1,0 +1,40 @@
+# Java
+*.class
+*.jar
+*.war
+*.nar
+target/
+!.mvn/wrapper/maven-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+*.swp
+*.swo
+
+# Maven
+log/
+*.log
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+
+# Spring Boot
+application-local.properties
+application-dev.properties
+*.db
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Node / Frontend
+node_modules/
+dist/
+build/
+.next/
