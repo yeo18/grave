@@ -35,43 +35,22 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     public void run(String... args) {
         // ==========================================
-        // 1. CRÉATION DE TOUTES LES PERMISSIONS
+        // 1. CRÉATION / RESTAURATION DE TOUTES LES PERMISSIONS
         // ==========================================
-        if (permissionRepository.count() == 0) {
-            List<Permission> permissions = Arrays.asList(
-                    // Chantier
-                    newPermission("CHANTIER_CREER"),
-                    newPermission("CHANTIER_MODIFIER"),
-                    newPermission("CHANTIER_SUPPRIMER"),
-                    newPermission("CHANTIER_VOIR"),
-                    newPermission("CHANTIER_VOIR_STATS"),
+        List<String> nomsPermissions = Arrays.asList(
+                "CHANTIER_CREER", "CHANTIER_MODIFIER", "CHANTIER_SUPPRIMER", "CHANTIER_VOIR", "CHANTIER_VOIR_STATS",
+                "TACHE_CREER", "TACHE_MODIFIER", "TACHE_SUPPRIMER", "TACHE_VOIR",
+                "TACHE_ASSIGNER_EQUIPE", "TACHE_ASSIGNER_UTILISATEUR",
+                "EQUIPE_CREER", "EQUIPE_MODIFIER", "EQUIPE_SUPPRIMER", "EQUIPE_VOIR", "EQUIPE_GERER_MEMBRES",
+                "UTILISATEUR_VOIR", "UTILISATEUR_CREER", "UTILISATEUR_MODIFIER", "UTILISATEUR_SUPPRIMER",
+                "GERER_HABILITATIONS"
+        );
 
-                    // Tache
-                    newPermission("TACHE_CREER"),
-                    newPermission("TACHE_MODIFIER"),
-                    newPermission("TACHE_SUPPRIMER"),
-                    newPermission("TACHE_VOIR"),
-                    newPermission("TACHE_ASSIGNER_EQUIPE"),
-                    newPermission("TACHE_ASSIGNER_UTILISATEUR"),
-
-                    // Equipe
-                    newPermission("EQUIPE_CREER"),
-                    newPermission("EQUIPE_MODIFIER"),
-                    newPermission("EQUIPE_SUPPRIMER"),
-                    newPermission("EQUIPE_VOIR"),
-                    newPermission("EQUIPE_GERER_MEMBRES"),
-
-                    // Utilisateur
-                    newPermission("UTILISATEUR_VOIR"),
-                    newPermission("UTILISATEUR_CREER"),
-                    newPermission("UTILISATEUR_MODIFIER"),
-                    newPermission("UTILISATEUR_SUPPRIMER"),
-
-                    // Admin
-                    newPermission("GERER_HABILITATIONS")
-            );
-            permissionRepository.saveAll(permissions);
-            System.out.println("✅ Toutes les permissions créées avec succès");
+        for (String nom : nomsPermissions) {
+            if (permissionRepository.findByNom(nom).isEmpty()) {
+                permissionRepository.save(newPermission(nom));
+                System.out.println("✅ Permission restaurée : " + nom);
+            }
         }
 
         // ==========================================
@@ -104,7 +83,17 @@ public class DataInitializer implements CommandLineRunner {
         profilRepository.save(adminProfil);
 
         // ==========================================
-        // 4. CRÉATION DE L'ADMIN PAR DÉFAUT
+        // 4. ATTRIBUTION DE TACHE_VOIR AU PROFIL USER
+        // ==========================================
+        permissionRepository.findByNom("TACHE_VOIR").ifPresent(perm -> {
+            if (!userProfil.getPermissions().contains(perm)) {
+                userProfil.getPermissions().add(perm);
+                profilRepository.save(userProfil);
+            }
+        });
+
+        // ==========================================
+        // 5. CRÉATION DE L'ADMIN PAR DÉFAUT
         // ==========================================
         if (utilisateurRepository.findByEmail("admin@example.com").isEmpty()) {
             Utilisateur admin = new Utilisateur();

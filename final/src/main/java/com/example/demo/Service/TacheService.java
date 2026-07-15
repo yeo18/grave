@@ -12,6 +12,7 @@ import com.example.demo.Repository.UtilisateurRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -128,7 +129,15 @@ public class TacheService {
         return tacheRepository.findAll();
     }
 
-    // 5. VOIR UNE
+    // 5. MES TACHES (pour un utilisateur USER — filtré par assignation)
+    public List<Tache> mesTaches() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        Utilisateur user = utilisateurRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+        return tacheRepository.findByAssigneAId(user.getId());
+    }
+
+    // 6. VOIR UNE
     @PreAuthorize("@securityEvaluator.hasPermission('TACHE_VOIR')")
     public Tache TacheParId(Long id) {
         return tacheRepository.findById(id)

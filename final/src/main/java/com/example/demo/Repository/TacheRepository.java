@@ -24,4 +24,6 @@ public interface TacheRepository extends JpaRepository<Tache, Long> {
     );
 
     List<Tache> findByChantierId(Long chantierId);
+
+    List<Tache> findByAssigneAId(Long utilisateurId);
 }

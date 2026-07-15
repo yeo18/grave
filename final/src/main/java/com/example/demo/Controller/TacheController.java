@@ -72,4 +72,9 @@ public class TacheController {
     public ResponseEntity<List<Tache>> voirToutesLesTaches() {
         return ResponseEntity.ok(tacheService.getAllTaches());
     }
+
+    @GetMapping("/mes-taches")
+    public ResponseEntity<List<Tache>> mesTaches() {
+        return ResponseEntity.ok(tacheService.mesTaches());
+    }
 }
