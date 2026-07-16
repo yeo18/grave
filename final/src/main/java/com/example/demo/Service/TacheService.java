@@ -129,11 +129,18 @@ public class TacheService {
         return tacheRepository.findAll();
     }
 
-    // 5. MES TACHES (pour un utilisateur USER — filtré par assignation)
+    // 5. MES TACHES (pour un utilisateur USER — filtré par assignation + équipe)
     public List<Tache> mesTaches() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         Utilisateur user = utilisateurRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+        Equipe userEquipe = user.getEquipe();
+        if (userEquipe != null) {
+            return tacheRepository.findByAssigneAIdOrEquipesIdIn(
+                    user.getId(),
+                    List.of(userEquipe.getId())
+            );
+        }
         return tacheRepository.findByAssigneAId(user.getId());
     }
 
@@ -148,6 +155,154 @@ public class TacheService {
     @PreAuthorize("@securityEvaluator.hasPermission('TACHE_VOIR')")
     public List<Tache> TacheParChantier(Long chantierId) {
         return tacheRepository.findByChantierId(chantierId);
+    }
+
+    // 6b. MES TACHES PAR CHANTIER (pour un utilisateur USER)
+    public List<Tache> mesTachesParChantier(Long chantierId) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        Utilisateur user = utilisateurRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+        Equipe userEquipe = user.getEquipe();
+        if (userEquipe != null) {
+            return tacheRepository.findByChantierIdAndAssigneAIdOrEquipesIdIn(
+                    chantierId, user.getId(), List.of(userEquipe.getId())
+            );
+        }
+        return tacheRepository.findByChantierId(chantierId).stream()
+                .filter(t -> t.getAssigneA() != null && t.getAssigneA().getId().equals(user.getId()))
+                .toList();
+    }
+
+    // ========== STATS ==========
+
+    private Utilisateur getCurrentUser() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        return utilisateurRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+    }
+
+    private List<Long> getCurrentUserEquipeIds(Utilisateur user) {
+        if (user.getEquipe() != null) {
+            return List.of(user.getEquipe().getId());
+        }
+        return List.of();
+    }
+
+    public com.example.demo.Dto.MesStatsDto mesStats() {
+        Utilisateur user = getCurrentUser();
+        List<Long> equipeIds = getCurrentUserEquipeIds(user);
+        List<Tache> toutes = equipeIds.isEmpty()
+                ? tacheRepository.findByAssigneAId(user.getId())
+                : tacheRepository.findByAssigneAIdOrEquipesIdIn(user.getId(), equipeIds);
+
+        return buildStats(toutes, user, equipeIds);
+    }
+
+    public com.example.demo.Dto.MesStatsDto mesStatsParDates(java.time.LocalDate start, java.time.LocalDate end) {
+        Utilisateur user = getCurrentUser();
+        List<Long> equipeIds = getCurrentUserEquipeIds(user);
+        List<Tache> toutes = equipeIds.isEmpty()
+                ? tacheRepository.findByAssigneAId(user.getId()).stream()
+                    .filter(t -> t.getDatedebut() != null && !t.getDatedebut().isBefore(start) && !t.getDatedebut().isAfter(end))
+                    .toList()
+                : tacheRepository.findByAssigneAIdOrEquipesIdInAndDatedebutBetween(user.getId(), equipeIds, start, end);
+        if (toutes.isEmpty()) {
+            toutes = equipeIds.isEmpty()
+                    ? tacheRepository.findByAssigneAId(user.getId()).stream()
+                        .filter(t -> t.getDatefin() != null && !t.getDatefin().isBefore(start) && !t.getDatefin().isAfter(end))
+                        .toList()
+                    : tacheRepository.findByAssigneAIdOrEquipesIdInAndDatefinBetween(user.getId(), equipeIds, start, end);
+        }
+        return buildStats(toutes, user, equipeIds);
+    }
+
+    public com.example.demo.Dto.MesStatsDto mesStatsParChantier(Long chantierId) {
+        Utilisateur user = getCurrentUser();
+        List<Long> equipeIds = getCurrentUserEquipeIds(user);
+        List<Tache> toutes = equipeIds.isEmpty()
+                ? tacheRepository.findByChantierId(chantierId).stream()
+                    .filter(t -> t.getAssigneA() != null && t.getAssigneA().getId().equals(user.getId()))
+                    .toList()
+                : tacheRepository.findByChantierIdAndAssigneAIdOrEquipesIdIn(chantierId, user.getId(), equipeIds);
+
+        com.example.demo.Dto.MesStatsDto dto = buildStats(toutes, user, equipeIds);
+        java.util.Optional<com.example.demo.Dto.MesStatsDto.StatsParChantier> chantierStat = dto.getParChantier().stream()
+                .filter(s -> s.getChantierId().equals(chantierId))
+                .findFirst();
+        if (chantierStat.isPresent()) {
+            dto.setParChantier(java.util.List.of(chantierStat.get()));
+        }
+        return dto;
+    }
+
+    public com.example.demo.Dto.MesStatsDto mesStatsParChantierAvecDates(Long chantierId, java.time.LocalDate start, java.time.LocalDate end) {
+        Utilisateur user = getCurrentUser();
+        List<Long> equipeIds = getCurrentUserEquipeIds(user);
+
+        java.util.function.Predicate<Tache> inRange = t ->
+                (t.getDatedebut() != null && !t.getDatedebut().isBefore(start) && !t.getDatedebut().isAfter(end))
+                || (t.getDatefin() != null && !t.getDatefin().isBefore(start) && !t.getDatefin().isAfter(end));
+
+        List<Tache> toutes;
+        if (equipeIds.isEmpty()) {
+            toutes = tacheRepository.findByChantierId(chantierId).stream()
+                    .filter(t -> t.getAssigneA() != null && t.getAssigneA().getId().equals(user.getId()))
+                    .filter(inRange)
+                    .toList();
+        } else {
+            List<Tache> sansDate = tacheRepository.findByChantierIdAndAssigneAIdOrEquipesIdIn(chantierId, user.getId(), equipeIds);
+            toutes = sansDate.stream().filter(inRange).toList();
+        }
+
+        com.example.demo.Dto.MesStatsDto dto = buildStats(toutes, user, equipeIds);
+        java.util.Optional<com.example.demo.Dto.MesStatsDto.StatsParChantier> chantierStat = dto.getParChantier().stream()
+                .filter(s -> s.getChantierId().equals(chantierId))
+                .findFirst();
+        if (chantierStat.isPresent()) {
+            dto.setParChantier(java.util.List.of(chantierStat.get()));
+        }
+        return dto;
+    }
+
+    private com.example.demo.Dto.MesStatsDto buildStats(List<Tache> toutes, Utilisateur user, List<Long> equipeIds) {
+        com.example.demo.Dto.MesStatsDto dto = new com.example.demo.Dto.MesStatsDto();
+        dto.setTotalTaches(toutes.size());
+        dto.setTachesTerminees(toutes.stream().filter(t -> t.getStatus() == com.example.demo.Entity.Mestypes.StatusTache.TERMINE).count());
+        dto.setTachesEnCours(toutes.stream().filter(t -> t.getStatus() == com.example.demo.Entity.Mestypes.StatusTache.EN_COURS).count());
+        dto.setTachesAFaire(toutes.stream().filter(t -> t.getStatus() == com.example.demo.Entity.Mestypes.StatusTache.A_FAIRE).count());
+        dto.setTachesBloquees(toutes.stream().filter(t -> t.getStatus() == com.example.demo.Entity.Mestypes.StatusTache.EN_ATTENTE || t.getStatus() == com.example.demo.Entity.Mestypes.StatusTache.SUSPENDU).count());
+        dto.setTachesIndividuelles(toutes.stream().filter(t -> t.getAssigneA() != null && t.getAssigneA().getId().equals(user.getId())).count());
+        dto.setTachesEquipe(toutes.stream().filter(t -> t.getAssigneA() == null || !t.getAssigneA().getId().equals(user.getId())).count());
+        dto.setTauxAchevement(toutes.isEmpty() ? 0 : Math.round((double) dto.getTachesTerminees() / toutes.size() * 10000.0) / 100.0);
+
+        java.util.Map<Long, java.util.List<Tache>> parChantier = toutes.stream()
+                .collect(java.util.stream.Collectors.groupingBy(t -> t.getChantier().getId()));
+
+        java.util.List<com.example.demo.Dto.MesStatsDto.StatsParChantier> chantiers = new java.util.ArrayList<>();
+        for (java.util.Map.Entry<Long, java.util.List<Tache>> entry : parChantier.entrySet()) {
+            java.util.List<Tache> tasks = entry.getValue();
+            com.example.demo.Dto.MesStatsDto.StatsParChantier sc = new com.example.demo.Dto.MesStatsDto.StatsParChantier();
+            sc.setChantierId(entry.getKey());
+            sc.setChantierNom(tasks.get(0).getChantier().getNom());
+            sc.setTotal(tasks.size());
+            sc.setIndividuelles(tasks.stream().filter(t -> t.getAssigneA() != null && t.getAssigneA().getId().equals(user.getId())).count());
+            sc.setEquipe(tasks.stream().filter(t -> t.getAssigneA() == null || !t.getAssigneA().getId().equals(user.getId())).count());
+            sc.setTerminees(tasks.stream().filter(t -> t.getStatus() == com.example.demo.Entity.Mestypes.StatusTache.TERMINE).count());
+            sc.setEnCours(tasks.stream().filter(t -> t.getStatus() == com.example.demo.Entity.Mestypes.StatusTache.EN_COURS).count());
+            sc.setAFaire(tasks.stream().filter(t -> t.getStatus() == com.example.demo.Entity.Mestypes.StatusTache.A_FAIRE).count());
+            sc.setBloquees(tasks.stream().filter(t -> t.getStatus() == com.example.demo.Entity.Mestypes.StatusTache.EN_ATTENTE || t.getStatus() == com.example.demo.Entity.Mestypes.StatusTache.SUSPENDU).count());
+            sc.setTauxAchevement(tasks.isEmpty() ? 0 : Math.round((double) sc.getTerminees() / tasks.size() * 10000.0) / 100.0);
+            chantiers.add(sc);
+        }
+        dto.setParChantier(chantiers);
+        return dto;
+    }
+
+    // ========== TOTAL SYSTÈME ==========
+
+    @PreAuthorize("@securityEvaluator.hasPermission('TACHE_VOIR')")
+    public long totalTaches() {
+        return tacheRepository.count();
     }
 
     // 7. ASSIGNER A UNE EQUIPE (Méthode dédiée)

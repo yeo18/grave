@@ -31,17 +31,13 @@ public class UtilisateurController {
         return ResponseEntity.ok(utilisateurService.trouverParId(id));
     }
 
-    // 3. Modifier un utilisateur (champs partiels)
+    // 3. Modifier un utilisateur (admin : profil et permissions uniquement, pas d'infos personnelles)
     @PutMapping("/{utilisateurId}")
     @PreAuthorize("@securityEvaluator.hasPermission('GERER_HABILITATIONS')")
     public ResponseEntity<Utilisateur> modifierUtilisateur(
             @PathVariable Long utilisateurId,
-            @RequestParam(required = false) String nom,
-            @RequestParam(required = false) String prenom,
-            @RequestParam(required = false) String email,
-            @RequestParam(required = false) String telephone,
             @RequestParam(required = false) Long profilId) {
-        Utilisateur user = utilisateurService.modifierUtilisateur(utilisateurId, nom, prenom, email, telephone, profilId);
+        Utilisateur user = utilisateurService.modifierUtilisateur(utilisateurId, null, null, null, null, profilId);
         return ResponseEntity.ok(user);
     }
 

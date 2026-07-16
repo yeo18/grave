@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Map;
 
@@ -33,7 +34,7 @@ public class EquipeController {
 
     @PostMapping
     @PreAuthorize("@securityEvaluator.hasPermission('EQUIPE_CREER')")
-    public ResponseEntity<?> creerEquipe(@RequestBody EquipeDto dto) {
+    public ResponseEntity<?> creerEquipe(@Valid @RequestBody EquipeDto dto) {
         Equipe equipe = equipeService.creerEquipe(dto);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(Map.of("message", "Équipe créée avec succès", "data", equipe));
@@ -41,7 +42,7 @@ public class EquipeController {
 
     @PutMapping("/{id}")
     @PreAuthorize("@securityEvaluator.hasPermission('EQUIPE_MODIFIER')")
-    public ResponseEntity<?> modifierEquipe(@PathVariable Long id, @RequestBody EquipeDto dto) {
+    public ResponseEntity<?> modifierEquipe(@PathVariable Long id, @Valid @RequestBody EquipeDto dto) {
         Equipe equipe = equipeService.modifierEquipe(id, dto);
         return ResponseEntity.ok(Map.of("message", "Équipe modifiée avec succès", "data", equipe));
     }

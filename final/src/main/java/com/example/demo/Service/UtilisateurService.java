@@ -104,22 +104,61 @@ public class UtilisateurService {
         return dto;
     }
 
+    private void validerTelephone(String telephone) {
+        if (telephone != null && !telephone.isBlank() && !telephone.matches("^[0-9]{10}$")) {
+            throw new RuntimeException("Le téléphone doit contenir exactement 10 chiffres");
+        }
+    }
+
+    private void validerEmail(String email) {
+        if (email != null && !email.isBlank() && !email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")) {
+            throw new RuntimeException("Format d'email invalide");
+        }
+    }
+
     @Transactional
     public Utilisateur modifierUtilisateur(Long id, String nom, String prenom, String email, String telephone, Long profilId) {
         Utilisateur user = trouverParId(id);
         if (nom != null) user.setNom(nom);
         if (prenom != null) user.setPrenom(prenom);
         if (email != null) {
+            validerEmail(email);
             if (utilisateurRepository.findByEmail(email).isPresent() && !user.getEmail().equals(email)) {
                 throw new RuntimeException("Cet email est déjà utilisé");
             }
             user.setEmail(email);
         }
-        if (telephone != null) user.setTelephone(telephone);
+        if (telephone != null) {
+            validerTelephone(telephone);
+            user.setTelephone(telephone);
+        }
         if (profilId != null) {
             Profil profil = profilRepository.findById(profilId)
                     .orElseThrow(() -> new RuntimeException("Profil non trouvé"));
             user.setProfil(profil);
+        }
+        user.setDateModification(LocalDateTime.now());
+        return utilisateurRepository.save(user);
+    }
+
+    @Transactional
+    public Utilisateur modifierMonProfil(Long id, String nom, String prenom, String email, String telephone, String password) {
+        Utilisateur user = trouverParId(id);
+        if (nom != null) user.setNom(nom);
+        if (prenom != null) user.setPrenom(prenom);
+        if (email != null) {
+            validerEmail(email);
+            if (utilisateurRepository.findByEmail(email).isPresent() && !user.getEmail().equals(email)) {
+                throw new RuntimeException("Cet email est déjà utilisé");
+            }
+            user.setEmail(email);
+        }
+        if (telephone != null) {
+            validerTelephone(telephone);
+            user.setTelephone(telephone);
+        }
+        if (password != null && !password.isBlank()) {
+            user.setPassword(passwordEncoder.encode(password));
         }
         user.setDateModification(LocalDateTime.now());
         return utilisateurRepository.save(user);

@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Map;
 
@@ -21,7 +22,7 @@ public class TacheController {
 
     @PostMapping
     @PreAuthorize("@securityEvaluator.hasPermission('TACHE_CREER')")
-    public ResponseEntity<?> creerTache(@RequestBody TacheDto dto) {
+    public ResponseEntity<?> creerTache(@Valid @RequestBody TacheDto dto) {
         Tache tache = tacheService.creerTache(dto);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(Map.of("message", "Tâche créée avec succès", "data", tache));
@@ -29,7 +30,7 @@ public class TacheController {
 
     @PutMapping("/{id}")
     @PreAuthorize("@securityEvaluator.hasPermission('TACHE_MODIFIER')")
-    public ResponseEntity<?> updateTache(@PathVariable Long id, @RequestBody TacheDto dto) {
+    public ResponseEntity<?> updateTache(@PathVariable Long id, @Valid @RequestBody TacheDto dto) {
         Tache tache = tacheService.modifierTache(id, dto);
         return ResponseEntity.ok(Map.of("message", "Tâche modifiée avec succès", "data", tache));
     }
@@ -71,11 +72,6 @@ public class TacheController {
     @PreAuthorize("@securityEvaluator.hasPermission('TACHE_VOIR')")
     public ResponseEntity<List<Tache>> voirToutesLesTaches() {
         return ResponseEntity.ok(tacheService.getAllTaches());
-    }
-
-    @GetMapping("/mes-taches")
-    public ResponseEntity<List<Tache>> mesTaches() {
-        return ResponseEntity.ok(tacheService.mesTaches());
     }
 
     @PutMapping("/{id}/terminer")

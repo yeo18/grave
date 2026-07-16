@@ -3,6 +3,7 @@ import com.example.demo.Dto.ReponseAuthentification;
 import com.example.demo.Dto.Connexion;
 import com.example.demo.Dto.Inscription;
 import com.example.demo.Dto.UserMeDto;
+import com.example.demo.Entity.Utilisateur;
 import com.example.demo.Security.JwtUtil;
 import com.example.demo.Service.AuthService;
 import com.example.demo.Service.UtilisateurService;
@@ -54,6 +55,23 @@ public class AuthController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
         UserMeDto dto = utilisateurService.getCurrentUserDto(email);
+        return ResponseEntity.ok(dto);
+    }
+
+    @PutMapping("/me")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<UserMeDto> updateCurrentUser(
+            @RequestParam(required = false) String nom,
+            @RequestParam(required = false) String prenom,
+            @RequestParam(required = false) String email,
+            @RequestParam(required = false) String telephone,
+            @RequestParam(required = false) String password) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentEmail = authentication.getName();
+        Utilisateur currentUser = utilisateurService.trouverParEmail(currentEmail);
+        utilisateurService.modifierMonProfil(currentUser.getId(), nom, prenom, email, telephone, password);
+        UserMeDto dto = utilisateurService.getCurrentUserDto(
+                email != null ? email : currentEmail);
         return ResponseEntity.ok(dto);
     }
 

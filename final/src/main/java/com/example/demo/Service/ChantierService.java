@@ -33,8 +33,11 @@ public class ChantierService {
     @PreAuthorize("@securityEvaluator.hasPermission('CHANTIER_CREER')")
     @Transactional
     public Chantier creerChantier(ChantierDto dto){
+        if (chantierRepository.findByNom(dto.getNom().trim()).isPresent()) {
+            throw new RuntimeException("Un chantier avec ce nom existe déjà");
+        }
         Chantier chantier = new Chantier();
-        chantier.setNom(dto.getNom());
+        chantier.setNom(dto.getNom().trim());
         chantier.setType(dto.getType());
         chantier.setLocalisation( dto.getLocalisation());
         chantier.setLongitude(dto.getLongitude());
@@ -52,7 +55,10 @@ public class ChantierService {
         Chantier chantier = chantierRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Le chantier est introuvable"));
 
-        chantier.setNom(dto.getNom());
+        if (!chantier.getNom().equals(dto.getNom().trim()) && chantierRepository.findByNom(dto.getNom().trim()).isPresent()) {
+            throw new RuntimeException("Un chantier avec ce nom existe déjà");
+        }
+        chantier.setNom(dto.getNom().trim());
         chantier.setDatedebut(dto.getDatedebut());
         chantier.setDatefin(dto.getDatefin());
         chantier.setLocalisation(dto.getLocalisation());

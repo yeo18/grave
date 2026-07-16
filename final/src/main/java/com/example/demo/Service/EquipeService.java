@@ -27,10 +27,13 @@ public class EquipeService {
     @PreAuthorize("@securityEvaluator.hasPermission('EQUIPE_CREER')")
     @Transactional
     public Equipe creerEquipe(EquipeDto dto) {
+        if (equipeRepository.findByNom(dto.getNom().trim()).isPresent()) {
+            throw new RuntimeException("Une équipe avec ce nom existe déjà");
+        }
         Chantier chantier = chantierRepository.findById(dto.getChantierId())
                 .orElseThrow(() -> new RuntimeException("Chantier introuvable"));
         Equipe equipe = new Equipe();
-        equipe.setNom(dto.getNom());
+        equipe.setNom(dto.getNom().trim());
         equipe.setDomaine(dto.getDomaine());
         equipe.setChantier(chantier);
         return equipeRepository.save(equipe);
@@ -46,7 +49,10 @@ public class EquipeService {
                     .orElseThrow(() -> new RuntimeException("Chantier introuvable"));
             equipe.setChantier(chantier);
         }
-        equipe.setNom(dto.getNom());
+        if (!equipe.getNom().equals(dto.getNom().trim()) && equipeRepository.findByNom(dto.getNom().trim()).isPresent()) {
+            throw new RuntimeException("Une équipe avec ce nom existe déjà");
+        }
+        equipe.setNom(dto.getNom().trim());
         if (dto.getDomaine() != null) {
             equipe.setDomaine(dto.getDomaine());
         }
