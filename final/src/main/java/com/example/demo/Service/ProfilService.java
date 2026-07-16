@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -67,7 +68,15 @@ public class ProfilService {
     }
 
     @Transactional
-    public void remplacerPermissionsDuProfil(Long profilId, Set<Long> permissionIds) {
+    public void ajouterPermissionAuProfil(Long profilId, Long permissionId) {
+        Profil profil = trouverParId(profilId);
+        Permission permission = permissionRepository.findById(permissionId)
+                .orElseThrow(() -> new RuntimeException("Permission non trouvée"));
+        profil.getPermissions().add(permission);
+        profil.setDateModification(LocalDateTime.now());
+        profilRepository.save(profil);
+    }
+
         Profil profil = trouverParId(profilId);
         Set<Permission> nouvellesPermissions = permissionIds.stream()
                 .map(id -> permissionRepository.findById(id)
