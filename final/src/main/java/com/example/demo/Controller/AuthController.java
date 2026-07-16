@@ -7,50 +7,56 @@ import com.example.demo.Entity.Utilisateur;
 import com.example.demo.Security.JwtUtil;
 import com.example.demo.Service.AuthService;
 import com.example.demo.Service.UtilisateurService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
+@Tag(name = "Authentification", description = "Inscription, connexion et gestion du profil")
 public class AuthController {
     private final UtilisateurService utilisateurService;
     private final AuthService authService;
     private final JwtUtil jwtUtil;
+
     @PostMapping("/register")
-    public ResponseEntity<?>register(@Valid @RequestBody Inscription inscription){
-        try{
+    @Operation(summary = "Inscription", description = "Crée un nouveau compte utilisateur")
+    public ResponseEntity<?> register(@Valid @RequestBody Inscription inscription) {
+        try {
             utilisateurService.inscrire(inscription);
-            return ResponseEntity.status(HttpStatus.CREATED).body("Utilisateur cree avec succès");
-        }catch (Exception e){
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.CREATED).body("Utilisateur créé avec succès");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
     }
+
     @PostMapping("/login")
-
-    public ResponseEntity<?>login(@Valid @RequestBody Connexion connexion){
-        try{
-            authService.authentifier(connexion.getEmail(),connexion.getPassword());
+    @Operation(summary = "Connexion", description = "Authentifie l'utilisateur et retourne un token JWT")
+    public ResponseEntity<?> login(@Valid @RequestBody Connexion connexion) {
+        try {
+            authService.authentifier(connexion.getEmail(), connexion.getPassword());
             String token = jwtUtil.generateToken(connexion.getEmail());
-            ReponseAuthentification reponse=  new ReponseAuthentification();
+            ReponseAuthentification reponse = new ReponseAuthentification();
             reponse.setToken(token);
-            System.out.println("Tentative de login pour : " + connexion.getEmail());
             return ResponseEntity.ok(reponse);
-        }catch (Exception e){
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Email ou mot de passe incorrect");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", "Email ou mot de passe incorrect"));
         }
     }
-
 
     @GetMapping("/me")
     @PreAuthorize("isAuthenticated()")
+    @Operation(summary = "Profil connecté", description = "Retourne les informations de l'utilisateur connecté")
     public ResponseEntity<UserMeDto> getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
@@ -60,6 +66,7 @@ public class AuthController {
 
     @PutMapping("/me")
     @PreAuthorize("isAuthenticated()")
+    @Operation(summary = "Modifier mon profil", description = "Met à jour les informations personnelles de l'utilisateur connecté")
     public ResponseEntity<UserMeDto> updateCurrentUser(
             @RequestParam(required = false) String nom,
             @RequestParam(required = false) String prenom,
