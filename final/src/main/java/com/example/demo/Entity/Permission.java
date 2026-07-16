@@ -1,6 +1,6 @@
 package com.example.demo.Entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Transient;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
@@ -24,6 +24,7 @@ public class Permission {
     @Column(unique = true,nullable = false)
     private String nom;
 
+    @Transient
     @Column(length = 255)
     private String description;
 
