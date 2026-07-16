@@ -79,11 +79,24 @@ public class ChantierService {
         chantierRepository.deleteById(id);
     }
 
-    //LISTE DE TOUT LE CHANTIERS
+    //LISTE DE TOUT LE CHANTIERS (filtré par utilisateur)
     @PreAuthorize("@securityEvaluator.hasPermission('CHANTIER_VOIR')")
     @Transactional
-    public List<Chantier>   voirListeChantier(){
-        return chantierRepository.findAll();
+    public List<Chantier> voirListeChantier(){
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        Utilisateur user = utilisateurRepository.findByEmail(email).orElse(null);
+        if (user == null) return List.of();
+
+        boolean isAdmin = user.getProfil() != null && "ADMIN".equalsIgnoreCase(user.getProfil().getNom());
+        if (isAdmin) {
+            return chantierRepository.findAll();
+        }
+
+        // Non-admin: ne voir que le chantier de son équipe
+        if (user.getEquipe() != null && user.getEquipe().getChantier() != null) {
+            return List.of(user.getEquipe().getChantier());
+        }
+        return List.of();
     }
     @PreAuthorize("@securityEvaluator.hasPermission('CHANTIER_VOIR_STATS')")
     public Map<String,Object> voirStats(Long id){

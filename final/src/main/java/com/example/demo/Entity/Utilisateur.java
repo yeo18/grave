@@ -2,6 +2,7 @@ package com.example.demo.Entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
@@ -33,6 +34,7 @@ public class Utilisateur {
     @Size(min = 7,max = 75)
     private String email;
     @Column(nullable = false)
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
     private String telephone;
     private LocalDateTime  datecreation;
