@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -77,6 +78,8 @@ public class ProfilService {
         profilRepository.save(profil);
     }
 
+    @Transactional
+    public void remplacerPermissionsDuProfil(Long profilId, List<Long> permissionIds) {
         Profil profil = trouverParId(profilId);
         Set<Permission> nouvellesPermissions = permissionIds.stream()
                 .map(id -> permissionRepository.findById(id)

@@ -67,7 +67,7 @@ public class AdminController {
 
     @PutMapping("/profils/{profilId}/permissions")
     @PreAuthorize("@securityEvaluator.hasPermission('GERER_HABILITATIONS')")
-    public ResponseEntity<Void> remplacerPermissionsDuProfil(@PathVariable Long profilId, @RequestBody Set<Long> permissionIds) {
+    public ResponseEntity<Void> remplacerPermissionsDuProfil(@PathVariable Long profilId, @RequestBody List<Long> permissionIds) {
         profilService.remplacerPermissionsDuProfil(profilId, permissionIds);
         return ResponseEntity.ok().build();
     }

@@ -1,9 +1,7 @@
 package com.example.demo.Entity;
 
-import jakarta.persistence.Transient;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
-import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
