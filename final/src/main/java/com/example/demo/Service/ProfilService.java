@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -72,6 +73,16 @@ public class ProfilService {
         Permission permission = permissionRepository.findById(permissionId)
                 .orElseThrow(() -> new RuntimeException("Permission non trouvée"));
         profil.getPermissions().add(permission);
+        profil.setDateModification(LocalDateTime.now());
+        profilRepository.save(profil);
+    }
+
+        Profil profil = trouverParId(profilId);
+        Set<Permission> nouvellesPermissions = permissionIds.stream()
+                .map(id -> permissionRepository.findById(id)
+                        .orElseThrow(() -> new RuntimeException("Permission non trouvée avec ID : " + id)))
+                .collect(Collectors.toSet());
+        profil.setPermissions(nouvellesPermissions);
         profil.setDateModification(LocalDateTime.now());
         profilRepository.save(profil);
     }
