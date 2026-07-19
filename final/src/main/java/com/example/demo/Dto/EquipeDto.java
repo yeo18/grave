@@ -2,6 +2,7 @@ package com.example.demo.Dto;
 
 import com.example.demo.util.HtmlSanitizer;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
@@ -15,6 +16,7 @@ public class EquipeDto {
     @Size(max = 255, message = "Le domaine ne doit pas dépasser 255 caractères")
     private String domaine;
 
+    @NotNull(message = "L'ID du chantier est obligatoire")
     @Positive(message = "L'ID du chantier doit être positif")
     private Long chantierId;
 

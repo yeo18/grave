@@ -22,7 +22,6 @@ public class Permission {
     @Column(unique = true,nullable = false)
     private String nom;
 
-    @Transient
     @Column(length = 255)
     private String description;
 

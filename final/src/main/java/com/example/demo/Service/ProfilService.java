@@ -2,8 +2,10 @@ package com.example.demo.Service;
 
 import com.example.demo.Entity.Permission;
 import com.example.demo.Entity.Profil;
+import com.example.demo.Entity.Utilisateur;
 import com.example.demo.Repository.PermissionRepository;
 import com.example.demo.Repository.ProfilRepository;
+import com.example.demo.Repository.UtilisateurRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +21,7 @@ public class ProfilService {
 
     private final ProfilRepository profilRepository;
     private final PermissionRepository permissionRepository;
+    private final UtilisateurRepository utilisateurRepository;
 
     public List<Profil> listerTous() {
         return profilRepository.findAll();
@@ -63,8 +66,10 @@ public class ProfilService {
     @Transactional
     public void supprimerProfil(Long id) {
         Profil profil = trouverParId(id);
-        // Optionnel : vérifier qu'aucun utilisateur n'est associé à ce profil
-        // Si des utilisateurs existent, on peut lever une exception
+        List<Utilisateur> utilisateurs = utilisateurRepository.findByProfilId(id);
+        if (!utilisateurs.isEmpty()) {
+            throw new RuntimeException("Impossible de supprimer ce profil : " + utilisateurs.size() + " utilisateur(s) y sont associés");
+        }
         profilRepository.delete(profil);
     }
 

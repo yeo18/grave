@@ -54,7 +54,7 @@ public class Utilisateur {
     @OneToMany(mappedBy = "assigneA", fetch=FetchType.LAZY)
     private List<Tache> tachesassignees=new ArrayList<>();
     @JsonIgnore
-    @OneToMany
+    @OneToMany(mappedBy = "createur")
     private List <Chantier> chantierCreer=new ArrayList<>();
     @ManyToOne
     @JoinColumn(name = "equipe_id")
