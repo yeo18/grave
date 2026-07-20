@@ -17,7 +17,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 @RestController
@@ -97,12 +96,14 @@ public class AdminController {
     @GetMapping("/permissions")
     @PreAuthorize("@securityEvaluator.hasPermission('GERER_HABILITATIONS')")
     public ResponseEntity<List<Permission>> listerPermissions() {
-        return ResponseEntity.ok(permissionService.listerToutes());
+        List<Permission> perms = permissionService.listerToutes();
+        System.out.println(">>> listerPermissions: found " + (perms != null ? perms.size() : "null") + " permissions");
+        return ResponseEntity.ok(perms);
     }
 
     @GetMapping("/permissions-test")
-    public ResponseEntity<Map<String, String>> permissionsTest() {
-        return ResponseEntity.ok(Map.of("status", "ok", "message", "Endpoint test permissions fonctionne"));
+    public ResponseEntity<String> permissionsTest() {
+        return ResponseEntity.ok("permissions-test OK");
     }
 
     // ========== PERMISSIONS SPÉCIFIQUES AUX UTILISATEURS ==========
