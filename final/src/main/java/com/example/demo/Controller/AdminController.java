@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -96,13 +97,15 @@ public class AdminController {
 
     @GetMapping("/permissions")
     @PreAuthorize("@securityEvaluator.hasPermission('GERER_HABILITATIONS')")
-    public ResponseEntity<?> listerPermissions() {
-        try {
-            return ResponseEntity.ok(permissionService.listerToutes());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", e.getClass().getSimpleName(), "message", e.getMessage()));
-        }
+    @Transactional(readOnly = true)
+    public ResponseEntity<List<Permission>> listerPermissions() {
+        return ResponseEntity.ok(permissionService.listerToutes());
+    }
+
+    @GetMapping("/permissions-test")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Map<String, String>> permissionsTest() {
+        return ResponseEntity.ok(Map.of("status", "ok", "message", "Endpoint test permissions fonctionne"));
     }
 
     // ========== PERMISSIONS SPÉCIFIQUES AUX UTILISATEURS ==========
